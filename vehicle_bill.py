@@ -50,6 +50,7 @@ def index():
 
         df.drop(columns=['Bill Amount'], inplace=True, errors='ignore')
         df['Trip Start'] = pd.to_datetime(df['Trip Start'], errors='coerce')
+        df['Trip End'] = pd.to_datetime(df['Trip End'], errors='coerce')
 
         # Filter date range
         df = df[(df['Trip Start'] >= start_date) & (df['Trip Start'] <= end_date)]
@@ -64,14 +65,16 @@ def index():
         df['Trip Duration'] = pd.to_numeric(df['Trip Duration'], errors='coerce')
         df['Overtime'] = df['Trip Duration'].apply(lambda x: max(x - 9, 0))
 
-        df = df[['Bill_Entity', 'Driver', 'Dept', 'vehicle', 'Requestor', 'User', 'Destination',
+        df = df[['Bill_Entity', 'Driver', 'Dept', 'Service_Hired', 'vehicle', 'Requestor', 'User', 'Destination',
                  'Trip Start', 'Trip End', 'Start Dial', 'End Dial', 'Trip Kms', 'Toll Tax',
                  'Fuel Expense', 'Waiting_Time', 'Driver_Time', 'Trip Duration', 'Calculated Bill']]
 
-        #df.insert(0, 'RDD', '')
-        df['Trip Start'] = pd.to_datetime(df['Trip Start'], errors='coerce').dt.strftime('%d-%m-%Y')
+        # Format date columns
+        df['Trip Start'] = pd.to_datetime(df['Trip Start'], errors='coerce').dt.strftime('%d/%m/%Y %H:%M:%S')
+        df['Trip End'] = pd.to_datetime(df['Trip End'], errors='coerce').dt.strftime('%d/%m/%Y %H:%M:%S')
         df = df.sort_values(by='Trip Start', ascending=True)
 
+        # Export to Excel
         file_name = f"vehicle_log_bills_{start_date.strftime('%d-%m-%Y')}_to_{end_date.strftime('%d-%m-%Y')}.xlsx"
         file_path = os.path.join('output', file_name)
         os.makedirs('output', exist_ok=True)
